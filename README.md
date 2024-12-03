@@ -46,6 +46,14 @@ The Wazuh solution is based on the Wazuh agent, which is deployed on the monitor
   * CentOS 7, 8 **(EOL)** --> can be replace with Rocky Linux 8, 9
   * Ubuntu 16.04, 18.04, 20.04, 22.04, 24.04
 
+## Required Port (Default)
+
+  * **Wazuh Server** --> **TCP**: 1514,1515,1516,55000 **UDP**:514
+
+  * **Wazuh Indexer** --> **TCP**: 9200,9300-9400
+
+  * **Wazuh Dashboard** --> **TCP**: 443
+
 ## Copyright
 
   * Wazuh Copyright (C) 2015-2023 Wazuh Inc. (License GPLv2)

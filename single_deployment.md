@@ -9,7 +9,9 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
 ## Prepare server for Wazuh SIEM
 
   * **1 Linux Server** (can be any Linux Operating System that are supported)
-  * **Server IP Address**: 192.168.100.10
+  * **Server IP Address**: 192.168.0.100
+
+  ![Prepared Server](src/prepared_server.png)
 
 ## Install Wazuh Indexer
 
@@ -31,7 +33,7 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
         # Wazuh indexer nodes
         indexer:
             - name: node-1
-            ip: "192.168.100.10"
+            ip: "192.168.0.100"
             #- name: node-2
             #  ip: "<indexer-node-ip>"
             #- name: node-3
@@ -42,7 +44,7 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
         # node, each one must have a node_type
         server:
             - name: wazuh-1
-            ip: "192.168.100.10"
+            ip: "192.168.0.100"
             #  node_type: master
             #- name: wazuh-2
             #  ip: "<wazuh-manager-ip>"
@@ -54,7 +56,7 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
         # Wazuh dashboard nodes
         dashboard:
             - name: dashboard
-            ip: "192.168.100.10"
+            ip: "192.168.0.100"
      ```
 
      *Remarks: We can replace the nodes name according to our preferences. For example, instead of naming it as `node-1`, we can replace it with `indexer-node` or something like that. Please make sure to remember the nodes name as we will need it later on.*
@@ -116,7 +118,30 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
     Sample of configuration:
 
     ```
-    Will put sample here later
+    network.host: "192.168.0.100"
+    node.name: "node-1"
+    cluster.initial_master_nodes:
+    - "node-1"
+    #- "node-2"
+    #- "node-3"
+    cluster.name: "wazuh-cluster"
+    #discovery.seed_hosts:
+    #  - "node-1-ip"
+    #  - "node-2-ip"
+    #  - "node-3-ip"
+    node.max_local_storage_nodes: "3"
+    path.data: /var/lib/wazuh-indexer
+    path.logs: /var/log/wazuh-indexer
+    ```
+    ```
+    plugins.security.authcz.admin_dn:
+    - "CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US"
+    plugins.security.check_snapshot_restore_write_privileges: true
+    plugins.security.enable_snapshot_restore_privilege: true
+    plugins.security.nodes_dn:
+    - "CN=node-1,OU=Wazuh,O=Wazuh,L=California,C=US"
+    #- "CN=node-2,OU=Wazuh,O=Wazuh,L=California,C=US"
+    #- "CN=node-3,OU=Wazuh,O=Wazuh,L=California,C=US"
     ```
 
 **Deploy the Certificate to Wazuh Indexer**
@@ -147,6 +172,49 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
     systemctl daemon-reload
     systemctl enable --now wazuh-indexer
     ```
+
+**Initialize Wazuh Indexer Cluster**
+
+1. Run this script to load new certificates information and start the cluster.
+
+    ```bash
+    /usr/share/wazuh-indexer/bin/indexer-security-init.sh
+    ```
+2. Testing the cluster. Change the IP address with your server IP address.
+
+    ```bash
+    curl -k -u admin:admin https://192.168.0.100:9200
+    ```
+
+    Sample Output:
+
+    ```
+    {
+        "name" : "node-1",
+        "cluster_name" : "wazuh-cluster",
+        "cluster_uuid" : "095jEW-oRJSFKLz5wmo5PA",
+        "version" : {
+            "number" : "7.10.2",
+            "build_type" : "rpm",
+            "build_hash" : "db90a415ff2fd428b4f7b3f800a51dc229287cb4",
+            "build_date" : "2023-06-03T06:24:25.112415503Z",
+            "build_snapshot" : false,
+            "lucene_version" : "9.6.0",
+            "minimum_wire_compatibility_version" : "7.10.0",
+            "minimum_index_compatibility_version" : "7.0.0"
+        },
+        "tagline" : "The OpenSearch Project: https://opensearch.org/"
+    }
+    ```
+3. Run this command to check cluster working or not.
+
+    ```bash
+    curl -k -u admin:admin https://192.168.0.100:9200/_cat/nodes?v
+    ```
+
+    Sample Output:
+
+    ![check cluster](src/check_cluster.png)
 
 ## Install Wazuh Server
 
@@ -183,7 +251,11 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
     Sample Configuration:
 
     ```
-    Will put the sample here
+    output.elasticsearch:
+        hosts: ["192.168.0.100:9200"]
+        protocol: https
+        username: ${username}
+        password: ${password}
     ```
 
 3. Create the filebeat keystore to securely store the authentication credentials.
@@ -251,7 +323,7 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
     <indexer>
         <enabled>yes</enabled>
         <hosts>
-            <host>https://192.168.100.10:9200</host>
+            <host>https://192.168.0.100:9200</host>
         </hosts>
         <ssl>
             <certificate_authorities>
@@ -298,7 +370,20 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
     Sample output:
 
     ```
-    Will put the sample here later
+    elasticsearch: https://192.168.0.100:9200...
+        parse url... OK
+        connection...
+            parse host... OK
+            dns lookup... OK
+            addresses: 192.168.0.100
+            dial up... OK
+        TLS...
+            security: server's certificate chain verification is enabled
+            handshake... OK
+            TLS version: TLSv1.3
+            dial up... OK
+        talk to server... OK
+        version: 7.10.2
     ```
 
 ## Install Wazuh Dashboard
@@ -327,7 +412,10 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
     Sample configuration:
 
     ```
-    Will put sample here later
+    server.host: 192.168.0.100
+    server.port: 443
+    opensearch.hosts: https://192.168.0.100:9200
+    opensearch.ssl.verificationMode: certificate
     ```
 
 **Deploying Certificate for Wazuh Dashboard**
@@ -364,7 +452,7 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
     ```
     hosts:
         - default:
-            url: https://192.168.100.10
+            url: https://192.168.0.100
             port: 55000
             username: wazuh-wui
             password: wazuh-wui
@@ -374,3 +462,5 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
 ### You have `SUCCESSFULLY` Install and Deploy Wazuh SIEM for Single Deployment.
 
 **Access to your Wazuh Dashboard --> https://192.168.100.10 (your server IP address)**
+
+![Done Setup](src/done_setup_1.png)
