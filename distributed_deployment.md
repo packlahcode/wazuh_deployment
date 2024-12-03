@@ -449,7 +449,7 @@ We will install each components in different server, so we will need 6 servers t
     systemctl restart wazuh-manager
     ```
 
-3. Configure the worker node. Edit `/var/ossec/etc/ossec.conf` on server nodes that will be the worker nodes.
+3. Configure the worker node. Edit `/var/ossec/etc/ossec.conf` on server nodes that will be the worker nodes. Use the same key that generated for master node in this configuration.
 
     ```
     <cluster>
