@@ -574,7 +574,7 @@ We will install each components in different server, so we will need 6 servers t
             run_as: false
     ```
 
-### You have `SUCCESSFULLY` Install and Deploy Wazuh SIEM for Single Deployment.
+### You have `SUCCESSFULLY` Install and Deploy Wazuh SIEM for Distributed Deployment.
 
 **Access to your Wazuh Dashboard --> https://192.168.0.106 (your server IP address)**
 
