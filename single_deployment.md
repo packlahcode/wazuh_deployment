@@ -461,6 +461,6 @@ To fully deploy Wazuh SIEM, we will need to install all the Wazuh components ins
 
 ### You have `SUCCESSFULLY` Install and Deploy Wazuh SIEM for Single Deployment.
 
-**Access to your Wazuh Dashboard --> https://192.168.100.10 (your server IP address)**
+**Access to your Wazuh Dashboard --> https://192.168.0.100 (your server IP address)**
 
 ![Done Setup](src/done_setup_1.png)
